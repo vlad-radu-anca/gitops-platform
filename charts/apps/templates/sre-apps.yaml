@@ -1,0 +1,29 @@
+{{- if and .Values.sre.enabled .Values.monitoring.enabled }}
+# Hands over to another repository: its apps/ chart declares that team's own
+# Applications (blackbox exporter, Chaos Mesh, SLO rules and alert routing),
+# the same app-of-apps pattern as this repository, one level down. It syncs
+# after podinfo, whose SLOs it defines.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: sre-apps
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: {{ .Values.sre.repoURL }}
+    targetRevision: {{ .Values.sre.revision }}
+    path: apps
+    helm:
+      valuesObject:
+        repoURL: {{ .Values.sre.repoURL }}
+        revision: {{ .Values.sre.revision }}
+  destination:
+    {{- include "apps.destination" "argocd" | nindent 4 }}
+  syncPolicy:
+    {{- include "apps.syncPolicy" . | nindent 4 }}
+{{- end }}

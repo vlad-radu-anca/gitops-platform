@@ -31,8 +31,26 @@ spec:
               requests:
                 cpu: 100m
                 memory: 400Mi
+            # Pick up rules, monitors and probes from every namespace, not only
+            # those labelled for this Helm release. Teams ship their own SLO
+            # rules and scrape configs next to their services, without needing
+            # to know the platform's internal labels.
+            ruleSelectorNilUsesHelmValues: false
+            serviceMonitorSelectorNilUsesHelmValues: false
+            podMonitorSelectorNilUsesHelmValues: false
+            probeSelectorNilUsesHelmValues: false
         alertmanager:
-          enabled: false
+          enabled: true
+          alertmanagerSpec:
+            # Routing comes from AlertmanagerConfig resources owned by teams.
+            # The default strategy adds a namespace matcher to each of them,
+            # which alerts from rules without a namespace label never match.
+            alertmanagerConfigMatcherStrategy:
+              type: None
+            resources:
+              requests:
+                cpu: 10m
+                memory: 64Mi
         # kind runs these control plane components without exposed metrics.
         kubeEtcd:
           enabled: false

@@ -14,3 +14,12 @@ environments:
 # a small machine; nothing else depends on them.
 monitoring:
   enabled: true
+
+# The SRE layer: SLOs, alert routing, synthetic probes and chaos experiments,
+# from a separate repository owned by the team that runs them. Off by default;
+# `make root SRE_REVISION=<ref>` switches it on at that ref, which is how that
+# repository's CI tests its own commits against this platform. Needs monitoring.
+sre:
+  enabled: false
+  repoURL: https://github.com/vlad-radu-anca/sre-reliability-lab.git
+  revision: main

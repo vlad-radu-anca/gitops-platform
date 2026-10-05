@@ -45,7 +45,9 @@ check_version prod    "$(grep -m1 'tag:' environments/prod/podinfo.yaml    | awk
 check_reachable kibana  kibana.localtest.me  /api/status "200 401"
 check_reachable argocd  argocd.localtest.me  /healthz    "200"
 if kubectl get application monitoring -n argocd >/dev/null 2>&1; then
-  check_reachable grafana grafana.localtest.me /api/health "200"
+  check_reachable grafana      grafana.localtest.me      /api/health "200"
+  check_reachable prometheus   prometheus.localtest.me   /-/ready    "200"
+  check_reachable alertmanager alertmanager.localtest.me /-/ready    "200"
 fi
 
 exit "$failed"
