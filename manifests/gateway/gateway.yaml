@@ -3,16 +3,28 @@
 # node. Envoy Gateway defaults the Service to externalTrafficPolicy: Local, under
 # which a node only accepts NodePort traffic for pods running on that node, and
 # Envoy runs on a worker. Cluster lets any node forward the traffic.
+#
+# The Service gets a fixed name, platform-gateway, instead of the generated
+# one, so in-cluster clients such as synthetic probes have a stable address
+# for "the front door".
+#
+# Per-virtual-host statistics give request counts and latency per hostname,
+# which is what per-service SLOs are built on. Envoy's per-route cluster
+# counters are not enough: they reset whenever the backend's endpoints change.
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: EnvoyProxy
 metadata:
   name: kind-nodeport
   namespace: envoy-gateway-system
 spec:
+  telemetry:
+    metrics:
+      enableVirtualHostStats: true
   provider:
     type: Kubernetes
     kubernetes:
       envoyService:
+        name: platform-gateway
         type: NodePort
         externalTrafficPolicy: Cluster
         patch:

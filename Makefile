@@ -5,6 +5,7 @@ CLUSTER              := gitops-platform
 KIND_NODE            := kindest/node:v1.36.4@sha256:099e049362a1526b2db71494e1947aae99bd16290d7c895f2b7ea312e3cbfaed
 ARGOCD_CHART_VERSION := 10.9.2
 REVISION             ?= main
+SRE_REVISION         ?=
 
 .DEFAULT_GOAL := help
 .PHONY: help up cluster argocd root wait smoke status password validate down
@@ -25,8 +26,12 @@ argocd: ## Install Argo CD, the one component not managed from git
 	  --namespace argocd --create-namespace \
 	  --values bootstrap/argocd-values.yaml --wait --timeout 10m
 
-root: ## Apply the root Application at REVISION (default main)
+root: ## Apply the root Application at REVISION (default main); SRE_REVISION=<ref> adds the SRE layer at that ref
 	sed 's/: main$$/: $(REVISION)/' bootstrap/root-app.yaml | kubectl apply -f -
+ifneq ($(SRE_REVISION),)
+	kubectl patch application root -n argocd --type merge \
+	  -p '{"spec":{"source":{"helm":{"valuesObject":{"sre":{"enabled":true,"revision":"$(SRE_REVISION)"}}}}}}'
+endif
 
 wait: ## Wait until every Application is synced and healthy
 	scripts/wait-for-apps.sh
