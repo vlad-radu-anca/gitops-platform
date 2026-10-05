@@ -76,7 +76,9 @@ Wiring this up surfaced real defects in the chart, all fixed upstream with regre
 
 ## Running it locally
 
-Needs Docker with about 8 GB of memory, [kind](https://kind.sigs.k8s.io), kubectl and Helm.
+Runs anywhere kind runs: any Linux host with Docker, or macOS with Docker Desktop or OrbStack. Linux is the reference platform, since the e2e workflow deploys the whole stack on an Ubuntu runner for every pull request, and a full deploy takes about 8 minutes there. You need about 8 GB of memory for containers, plus [kind](https://kind.sigs.k8s.io) 0.33 or later, kubectl and Helm.
+
+Elasticsearch needs `vm.max_map_count` of at least 262144 on the host. Its init container sets it, which works on most setups; if your host blocks privileged containers, run `sudo sysctl -w vm.max_map_count=262144` first.
 
 ```sh
 make up         # cluster, Argo CD, root Application, then wait until healthy

@@ -1,5 +1,8 @@
 # kind has no cloud load balancer, so Envoy's Service is a NodePort on 30080,
-# which bootstrap/kind-cluster.yaml maps to localhost:8080.
+# which bootstrap/kind-cluster.yaml maps to localhost:8080 on the control plane
+# node. Envoy Gateway defaults the Service to externalTrafficPolicy: Local, under
+# which a node only accepts NodePort traffic for pods running on that node, and
+# Envoy runs on a worker. Cluster lets any node forward the traffic.
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: EnvoyProxy
 metadata:
@@ -11,6 +14,7 @@ spec:
     kubernetes:
       envoyService:
         type: NodePort
+        externalTrafficPolicy: Cluster
         patch:
           type: StrategicMerge
           value:

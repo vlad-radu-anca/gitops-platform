@@ -8,14 +8,16 @@ GATEWAY="${GATEWAY:-127.0.0.1:8080}"
 PORT="${GATEWAY##*:}"
 failed=0
 
-call() {  # host path -> prints "<http status> <body>"
-  curl -s --max-time 10 --resolve "$1:$PORT:${GATEWAY%%:*}" -w '\n%{http_code}' "http://$1:$PORT$2" | tail -n 2
+call() {  # host path -> prints the response body, then the HTTP status on a final line
+  curl -s --max-time 10 --resolve "$1:$PORT:${GATEWAY%%:*}" -w '\n%{http_code}' "http://$1:$PORT$2"
 }
 
 check_version() {  # env expected
   local out body code version
   out=$(call "podinfo-$1.localtest.me" /version) || true
-  code=$(tail -n1 <<<"$out"); body=$(head -n1 <<<"$out")
+  # podinfo pretty-prints its JSON over several lines: the status is the last
+  # line, the body is everything before it.
+  code=$(tail -n1 <<<"$out"); body=$(sed '$d' <<<"$out")
   version=$(jq -r '.version // empty' <<<"$body" 2>/dev/null || true)
   if [ "$code" = "200" ] && [ "$version" = "$2" ]; then
     echo "ok    podinfo-$1 serves $version"
