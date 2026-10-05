@@ -1,6 +1,11 @@
 # Each route sits in the namespace of the Service it targets, which the
 # gateway's allowedRoutes permits without a ReferenceGrant.
 # Reach them at http://<host>:8080 once the kind cluster is up.
+#
+# The values the API server would default (group, kind, weight and the
+# PathPrefix match) are written out on purpose. They sit inside list items,
+# where Argo CD's diff cannot account for schema defaults of a custom
+# resource, so leaving them out keeps every route permanently OutOfSync.
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -9,14 +14,23 @@ metadata:
   namespace: podinfo-dev
 spec:
   parentRefs:
-    - name: platform
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: platform
       namespace: envoy-gateway-system
   hostnames:
     - podinfo-dev.localtest.me
   rules:
-    - backendRefs:
-        - name: podinfo
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - group: ""
+          kind: Service
+          name: podinfo
           port: 9898
+          weight: 1
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -25,14 +39,23 @@ metadata:
   namespace: podinfo-staging
 spec:
   parentRefs:
-    - name: platform
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: platform
       namespace: envoy-gateway-system
   hostnames:
     - podinfo-staging.localtest.me
   rules:
-    - backendRefs:
-        - name: podinfo
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - group: ""
+          kind: Service
+          name: podinfo
           port: 9898
+          weight: 1
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -41,14 +64,23 @@ metadata:
   namespace: podinfo-prod
 spec:
   parentRefs:
-    - name: platform
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: platform
       namespace: envoy-gateway-system
   hostnames:
     - podinfo-prod.localtest.me
   rules:
-    - backendRefs:
-        - name: podinfo
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - group: ""
+          kind: Service
+          name: podinfo
           port: 9898
+          weight: 1
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -57,14 +89,23 @@ metadata:
   namespace: platform
 spec:
   parentRefs:
-    - name: platform
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: platform
       namespace: envoy-gateway-system
   hostnames:
     - kibana.localtest.me
   rules:
-    - backendRefs:
-        - name: kibana
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - group: ""
+          kind: Service
+          name: kibana
           port: 5601
+          weight: 1
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -73,14 +114,23 @@ metadata:
   namespace: monitoring
 spec:
   parentRefs:
-    - name: platform
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: platform
       namespace: envoy-gateway-system
   hostnames:
     - grafana.localtest.me
   rules:
-    - backendRefs:
-        - name: monitoring-grafana
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - group: ""
+          kind: Service
+          name: monitoring-grafana
           port: 80
+          weight: 1
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -89,11 +139,20 @@ metadata:
   namespace: argocd
 spec:
   parentRefs:
-    - name: platform
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: platform
       namespace: envoy-gateway-system
   hostnames:
     - argocd.localtest.me
   rules:
-    - backendRefs:
-        - name: argocd-server
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - group: ""
+          kind: Service
+          name: argocd-server
           port: 80
+          weight: 1

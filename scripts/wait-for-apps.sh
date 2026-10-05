@@ -4,7 +4,7 @@
 set -euo pipefail
 
 NAMESPACE="${NAMESPACE:-argocd}"
-TIMEOUT="${TIMEOUT:-1500}"   # seconds
+TIMEOUT="${TIMEOUT:-900}"    # seconds; a full deploy takes about 8 minutes on a CI runner
 # root + 10 platform applications + 3 podinfo environments
 MIN_APPS="${MIN_APPS:-14}"
 INTERVAL=20

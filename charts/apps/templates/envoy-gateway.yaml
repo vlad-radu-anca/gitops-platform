@@ -15,8 +15,13 @@ spec:
     targetRevision: v1.9.1
     helm:
       releaseName: envoy-gateway
-      # CRDs come from the envoy-gateway-crds Application.
-      skipCrds: true
+      valuesObject:
+        # CRDs and the Gateway API safe-upgrades admission policy come from the
+        # envoy-gateway-crds Application. Left on, this chart renders the same
+        # policy from a subchart's templates (skipCrds does not reach those), and
+        # the two Applications fight over it and stay OutOfSync.
+        crds:
+          enabled: false
   destination:
     {{- include "apps.destination" "envoy-gateway-system" | nindent 4 }}
   syncPolicy:

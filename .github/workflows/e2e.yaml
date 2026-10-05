@@ -27,7 +27,7 @@ jobs:
     # test, which only exists here for branches of this repository, not forks.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 30
     env:
       REVISION: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
