@@ -1,0 +1,12 @@
+# staging runs the version on its way to prod, with more than one replica so
+# rolling updates behave as they will in production.
+replicaCount: 2
+image:
+  tag: 6.15.0
+ui:
+  message: "staging"
+  color: "#ef6c00"
+resources:
+  requests:
+    cpu: 10m
+    memory: 32Mi

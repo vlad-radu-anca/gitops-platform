@@ -1,0 +1,68 @@
+name: e2e
+
+# Builds a real cluster, lets Argo CD deploy the whole platform from the commit
+# under test, and fails unless every Application ends up synced and healthy and
+# the services answer through the gateway.
+on:
+  pull_request:
+  push:
+    branches: [main]
+  # Weekly, to catch breakage that comes from outside this repository, such as
+  # an upstream chart or image changing behind a pinned version.
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    name: deploy on kind
+    # Argo CD inside the test cluster clones this repository at the commit under
+    # test, which only exists here for branches of this repository, not forks.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      REVISION: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - uses: actions/checkout@v5
+
+      # Elasticsearch refuses to start below this. Kind nodes share the host
+      # kernel, so it has to be raised on the runner itself.
+      - name: Raise vm.max_map_count for Elasticsearch
+        run: sudo sysctl -w vm.max_map_count=262144
+
+      - uses: azure/setup-helm@v5.0.1
+        with:
+          version: v3.22.0
+
+      - name: Install kind
+        uses: helm/kind-action@v1.15.0
+        with:
+          version: v0.33.0
+          install_only: true
+
+      - name: Create the cluster
+        run: make cluster
+
+      - name: Install Argo CD
+        run: make argocd
+
+      - name: Deploy the platform from this commit
+        run: make root REVISION="$REVISION"
+
+      - name: Wait for every Application to be synced and healthy
+        run: make wait
+
+      - name: Smoke test through the gateway
+        run: make smoke
+
+      - name: Job summary
+        if: always()
+        run: scripts/summary.sh >> "$GITHUB_STEP_SUMMARY"

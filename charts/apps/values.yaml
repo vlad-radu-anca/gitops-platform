@@ -1,0 +1,16 @@
+# Git source for everything that lives in this repository. CI overrides
+# revision with the commit under test, so a pull request is deployed from its
+# own commit rather than from main.
+repoURL: https://github.com/vlad-radu-anca/gitops-platform.git
+revision: main
+
+# Environments podinfo is promoted through, in order.
+environments:
+  - dev
+  - staging
+  - prod
+
+# Prometheus and Grafana are the heaviest part of the stack. Switch them off on
+# a small machine; nothing else depends on them.
+monitoring:
+  enabled: true

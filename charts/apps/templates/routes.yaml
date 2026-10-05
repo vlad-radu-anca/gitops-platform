@@ -1,0 +1,21 @@
+# HTTP routes go last. An HTTPRoute that points at a Service which does not
+# exist yet would otherwise hold its wave back.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: routes
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: {{ .Values.repoURL }}
+    targetRevision: {{ .Values.revision }}
+    path: manifests/routes
+  destination:
+    {{- include "apps.destination" "envoy-gateway-system" | nindent 4 }}
+  syncPolicy:
+    {{- include "apps.syncPolicy" . | nindent 4 }}

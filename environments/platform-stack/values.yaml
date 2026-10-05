@@ -1,0 +1,58 @@
+# Values for the platform-stack umbrella chart (github.com/vlad-radu-anca/helm-umbrella-platform).
+#
+# The chart bundles 19 services. Most of them run application images that are
+# not publicly available, so this demo deploys the slice built entirely on
+# public images: Elasticsearch and Kibana. Every other component is switched
+# off, which also keeps the stack small enough for a laptop or a CI runner.
+
+global:
+  platform: onprem
+
+# Components with non-public images: off.
+cts: {enabled: false}
+apigw: {enabled: false}
+coreApi: {enabled: false}
+toc: {enabled: false}
+webui: {enabled: false}
+helpcenter: {enabled: false}
+swagger: {enabled: false}
+cert-service: {enabled: false}
+evencollector: {enabled: false}
+spark: {enabled: false}
+tus: {enabled: false}
+sftp-server: {enabled: false}
+misc: {enabled: false}
+# Infrastructure the demo does not need.
+ngf: {enabled: false}
+kafka-mirror: {enabled: false}
+topicOperator: {enabled: false}
+# On-prem, the mongo chart only creates users in an existing MongoDB server.
+mongo: {enabled: false}
+
+elasticsearch: {enabled: true}
+kibana: {enabled: true}
+
+elasticsearch-helm:
+  # Post-install configuration job; its image is one of the non-public ones.
+  elasticJob:
+    enabled: false
+  elasticsearch:
+    # Production defaults are 3 replicas with a 3 GB heap each.
+    replicaCount: 1
+    elastic_java_options: "-Xms512m -Xmx512m"
+    persistent_size: 2Gi
+    resources:
+      requests:
+        cpu: 250m
+        memory: 1Gi
+      limits:
+        cpu: "1"
+        memory: 1536Mi
+    # Traffic comes through Envoy Gateway (manifests/routes), not Ingress.
+    ingress:
+      enabled: false
+
+kibana-helm:
+  kibana:
+    ingress:
+      enabled: false

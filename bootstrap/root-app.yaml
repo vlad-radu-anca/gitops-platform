@@ -1,0 +1,26 @@
+# The root of the app-of-apps. It renders charts/apps, which in turn declares
+# every other Application. Both "main" values below are replaced with a commit
+# SHA when CI tests a pull request, so the whole tree is built from that commit.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: root
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/vlad-radu-anca/gitops-platform.git
+    path: charts/apps
+    targetRevision: main
+    helm:
+      valuesObject:
+        revision: main
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

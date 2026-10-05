@@ -1,0 +1,16 @@
+# Created here, ahead of the apps that use them, because the credentials below
+# have to exist before monitoring and platform-stack start. Prune is disabled:
+# deleting this app must never take a namespace, and everything in it, along.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: platform
+  annotations:
+    argocd.argoproj.io/sync-options: Prune=false
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: monitoring
+  annotations:
+    argocd.argoproj.io/sync-options: Prune=false

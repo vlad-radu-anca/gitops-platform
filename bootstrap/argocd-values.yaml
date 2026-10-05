@@ -1,0 +1,40 @@
+# Argo CD is the one thing installed by hand (make argocd, or the CI job).
+# Everything after it is reconciled from this repository.
+
+configs:
+  params:
+    # TLS would terminate at the gateway in a real cluster; the demo stays on HTTP.
+    server.insecure: true
+
+  cm:
+    # Argo CD stopped assessing the health of Application resources in 1.8.
+    # Without this check, sync waves in an app-of-apps only wait for a child
+    # Application to be created, not for it to become healthy, so ordering
+    # between waves silently stops working.
+    resource.customizations.health.argoproj.io_Application: |
+      hs = {}
+      hs.status = "Progressing"
+      hs.message = ""
+      if obj.status ~= nil and obj.status.health ~= nil then
+        hs.status = obj.status.health.status
+        if obj.status.health.message ~= nil then
+          hs.message = obj.status.health.message
+        end
+      end
+      return hs
+
+  repositories:
+    # OCI Helm registries have to be declared with enableOCI.
+    platform-charts:
+      name: platform-charts
+      type: helm
+      url: ghcr.io/vlad-radu-anca
+      enableOCI: "true"
+    envoyproxy:
+      name: envoyproxy
+      type: helm
+      url: docker.io/envoyproxy
+      enableOCI: "true"
+
+dex:
+  enabled: false

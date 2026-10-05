@@ -1,0 +1,31 @@
+# Gateway API and Envoy Gateway CRDs, from the dedicated CRDs chart. Helm only
+# installs a chart's crds/ folder once and never upgrades it; this chart ships
+# them as templates, so Argo CD keeps them current.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: envoy-gateway-crds
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-3"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: docker.io/envoyproxy
+    chart: gateway-crds-helm
+    targetRevision: v1.9.1
+    helm:
+      releaseName: envoy-gateway-crds
+      valuesObject:
+        crds:
+          gatewayAPI:
+            enabled: true
+            channel: standard
+          envoyGateway:
+            enabled: true
+  destination:
+    {{- include "apps.destination" "envoy-gateway-system" | nindent 4 }}
+  syncPolicy:
+    {{- include "apps.syncPolicy" . | nindent 4 }}

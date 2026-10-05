@@ -1,0 +1,29 @@
+# The platform-stack umbrella chart, pulled from GitHub Container Registry and
+# configured from this repository. The chart and its values live in different
+# repositories, joined by Argo CD's multi-source support.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: platform-stack
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  sources:
+    - repoURL: ghcr.io/vlad-radu-anca
+      chart: platform-stack
+      targetRevision: 0.8.2
+      helm:
+        releaseName: demo
+        valueFiles:
+          - $values/environments/platform-stack/values.yaml
+    - repoURL: {{ .Values.repoURL }}
+      targetRevision: {{ .Values.revision }}
+      ref: values
+  destination:
+    {{- include "apps.destination" "platform" | nindent 4 }}
+  syncPolicy:
+    {{- include "apps.syncPolicy" . | nindent 4 }}

@@ -1,0 +1,46 @@
+# One Application per environment, generated from the list in values.yaml.
+# Promotion is a change to environments/<env>/podinfo.yaml in a pull request:
+# prod is deliberately held one version behind dev and staging.
+#
+# ApplicationSet templates use the same double-brace syntax as Helm, so the
+# ApplicationSet placeholders below are wrapped in a Helm raw string (backticks)
+# to pass through Helm rendering untouched.
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: podinfo
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - list:
+        elements:
+          {{- range .Values.environments }}
+          - env: {{ . }}
+          {{- end }}
+  template:
+    metadata:
+      name: 'podinfo-{{`{{ .env }}`}}'
+      finalizers:
+        - resources-finalizer.argocd.argoproj.io
+    spec:
+      project: default
+      sources:
+        - repoURL: https://stefanprodan.github.io/podinfo
+          chart: podinfo
+          targetRevision: 6.15.0
+          helm:
+            releaseName: podinfo
+            valueFiles:
+              - '$values/environments/{{`{{ .env }}`}}/podinfo.yaml'
+        - repoURL: {{ .Values.repoURL }}
+          targetRevision: {{ .Values.revision }}
+          ref: values
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: 'podinfo-{{`{{ .env }}`}}'
+      syncPolicy:
+        {{- include "apps.syncPolicy" . | nindent 8 }}

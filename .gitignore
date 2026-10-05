@@ -1,0 +1,14 @@
+# Helm
+charts/*/charts/
+charts/*/Chart.lock
+*.tgz
+
+# Local clusters and tooling
+kubeconfig*
+.kube/
+
+# Editors / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp

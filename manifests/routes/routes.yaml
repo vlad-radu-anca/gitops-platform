@@ -1,0 +1,99 @@
+# Each route sits in the namespace of the Service it targets, which the
+# gateway's allowedRoutes permits without a ReferenceGrant.
+# Reach them at http://<host>:8080 once the kind cluster is up.
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: podinfo
+  namespace: podinfo-dev
+spec:
+  parentRefs:
+    - name: platform
+      namespace: envoy-gateway-system
+  hostnames:
+    - podinfo-dev.localtest.me
+  rules:
+    - backendRefs:
+        - name: podinfo
+          port: 9898
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: podinfo
+  namespace: podinfo-staging
+spec:
+  parentRefs:
+    - name: platform
+      namespace: envoy-gateway-system
+  hostnames:
+    - podinfo-staging.localtest.me
+  rules:
+    - backendRefs:
+        - name: podinfo
+          port: 9898
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: podinfo
+  namespace: podinfo-prod
+spec:
+  parentRefs:
+    - name: platform
+      namespace: envoy-gateway-system
+  hostnames:
+    - podinfo-prod.localtest.me
+  rules:
+    - backendRefs:
+        - name: podinfo
+          port: 9898
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: kibana
+  namespace: platform
+spec:
+  parentRefs:
+    - name: platform
+      namespace: envoy-gateway-system
+  hostnames:
+    - kibana.localtest.me
+  rules:
+    - backendRefs:
+        - name: kibana
+          port: 5601
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: grafana
+  namespace: monitoring
+spec:
+  parentRefs:
+    - name: platform
+      namespace: envoy-gateway-system
+  hostnames:
+    - grafana.localtest.me
+  rules:
+    - backendRefs:
+        - name: monitoring-grafana
+          port: 80
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: argocd
+  namespace: argocd
+spec:
+  parentRefs:
+    - name: platform
+      namespace: envoy-gateway-system
+  hostnames:
+    - argocd.localtest.me
+  rules:
+    - backendRefs:
+        - name: argocd-server
+          port: 80

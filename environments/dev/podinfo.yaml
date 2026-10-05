@@ -1,0 +1,11 @@
+# dev gets every change first.
+replicaCount: 1
+image:
+  tag: 6.15.0
+ui:
+  message: "dev"
+  color: "#2e7d32"
+resources:
+  requests:
+    cpu: 10m
+    memory: 32Mi

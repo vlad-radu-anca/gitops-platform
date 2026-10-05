@@ -1,0 +1,15 @@
+# Local cluster for the demo: one control plane, two workers.
+# The Envoy Gateway listener is exposed as NodePort 30080 and mapped to
+# localhost:8080, so the routes are reachable at http://<name>.localtest.me:8080
+# (localtest.me resolves to 127.0.0.1).
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: gitops-platform
+nodes:
+  - role: control-plane
+    extraPortMappings:
+      - containerPort: 30080
+        hostPort: 8080
+        protocol: TCP
+  - role: worker
+  - role: worker

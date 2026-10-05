@@ -1,0 +1,39 @@
+# Credentials for Elasticsearch and Kibana, generated inside the cluster by
+# External Secrets. Nothing secret is stored in git, and the same manifests
+# work on any fresh cluster. In production the ExternalSecret would point at a
+# ClusterSecretStore backed by AWS Secrets Manager instead of a generator.
+apiVersion: generators.external-secrets.io/v1alpha1
+kind: Password
+metadata:
+  name: elastic-admin
+  namespace: platform
+spec:
+  length: 32
+  digits: 8
+  # Kibana's startup check passes these to curl -u user:password, where some
+  # symbols would break the argument.
+  symbols: 0
+  noUpper: false
+  allowRepeat: true
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: internal-elastic-admin-client
+  namespace: platform
+spec:
+  # Generate once. Rotating the password underneath a running Elasticsearch
+  # would lock Kibana out.
+  refreshPolicy: CreatedOnce
+  target:
+    name: internal-elastic-admin-client
+    template:
+      data:
+        elk-username: elastic
+        elk-password: "{{ .password }}"
+  dataFrom:
+    - sourceRef:
+        generatorRef:
+          apiVersion: generators.external-secrets.io/v1alpha1
+          kind: Password
+          name: elastic-admin

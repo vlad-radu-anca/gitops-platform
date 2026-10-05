@@ -1,0 +1,12 @@
+# prod is held one version behind until 6.15.0 has proven itself in staging.
+# Promoting it is a one-line pull request changing image.tag below.
+replicaCount: 2
+image:
+  tag: 6.14.0
+ui:
+  message: "prod"
+  color: "#1565c0"
+resources:
+  requests:
+    cpu: 10m
+    memory: 32Mi
